@@ -7,6 +7,7 @@ import {
 import express from 'express';
 import {join} from 'node:path';
 import { GoogleGenAI } from '@google/genai';
+import { apiRouter } from './api.router';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -15,9 +16,8 @@ const angularApp = new AngularNodeAppEngine();
 
 app.use(express.json());
 
-app.get('/api/test', (req, res) => {
-  res.json({ok: true});
-});
+// Mount our secure API router
+app.use('/api', apiRouter);
 
 /**
  * Serve static files from /browser

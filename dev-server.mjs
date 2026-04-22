@@ -1,5 +1,6 @@
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
+import { apiRouter } from './src/api.router.ts';
 import 'dotenv/config';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -11,6 +12,10 @@ const app = express();
 app.use(express.json());
 
 const browserDistFolder = join(__dirname, 'dist', 'app', 'browser');
+
+// Mount secure API router
+app.use('/api', apiRouter);
+
 app.use(express.static(browserDistFolder));
 
 app.use((req, res) => {

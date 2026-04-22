@@ -1,20 +1,10 @@
 import { Injectable, inject } from '@angular/core';
+import { storage, db } from '../../firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes as storageUpload, getDownloadURL as storageGetUrl, deleteObject as storageDelete } from 'firebase/storage';
+import { collection, doc, setDoc, getDocs, query, where, Timestamp, deleteDoc, orderBy } from 'firebase/firestore';
 import { AuthService } from './auth.service';
-
-export interface SavedVideo {
-  id: string;
-  url: string;
-  blob: Blob;
-  date: Date;
-  duration: number;
-  title: string;
-  scriptContent?: string;
-  isDeleted?: boolean;
-  deletedAt?: Date;
-  mediaType?: 'video' | 'audio';
-  userId?: string;
-  pinned?: boolean;
-}
+import { SavedVideo } from '../models/video.model';
 
 @Injectable({
   providedIn: 'root'

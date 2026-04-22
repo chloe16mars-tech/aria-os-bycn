@@ -2,7 +2,11 @@ import { Component, OnInit, OnDestroy, signal, inject, computed, ChangeDetection
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FirestoreService, AppNotification, UserProfile } from '../../services/firestore.service';
+import { NotificationService } from '../../services/notification.service';
+import { AppNotification } from '../../models/notification.model';
+import { UserService } from '../../services/user.service';
+import { UserProfile } from '../../models/user.model';
+import { StatsService } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastComponent } from '../ui/toast/toast.component';
 
@@ -90,7 +94,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private unsubNotifications?: () => void;
   private unsubProfile?: () => void;
   
-  private firestoreService = inject(FirestoreService);
+  private statsService = inject(StatsService);
+  private notificationService = inject(NotificationService);
+  private userService = inject(UserService);
   public authService = inject(AuthService);
 
   unreadCount = computed(() => {
@@ -105,15 +111,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.unsubscribeStats = this.firestoreService.getGlobalStatsSnapshot((total) => {
+    this.unsubscribeStats = this.statsService.getGlobalStatsSnapshot((total) => {
       this.totalGenerations.set(total);
     });
     
-    this.unsubNotifications = this.firestoreService.getNotificationsSnapshot((data) => {
+    this.unsubNotifications = this.notificationService.getNotificationsSnapshot((data) => {
       this.notifications.set(data);
     });
 
-    this.unsubProfile = this.firestoreService.getUserProfileSnapshot((data) => {
+    this.unsubProfile = this.userService.getUserProfileSnapshot((data) => {
       this.userProfile.set(data);
     });
   }

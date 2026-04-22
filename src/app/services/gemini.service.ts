@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { GoogleGenAI } from '@google/genai';
+import { Injectable, inject } from '@angular/core';
+import { auth } from '../../firebase';
 
 @Injectable({
   providedIn: 'root'
@@ -37,10 +37,7 @@ export class GeminiService {
       }
     } else {
       type = 'text';
-      prompt = `Analyze the following text: "${sourceText}". `;
     }
-
-    prompt += `
 Your task is to generate a highly professional script for a voice-over based on the provided source.
 Intention: ${intention}
 Tone: ${tone}
@@ -69,30 +66,42 @@ Write all content in French. Make it sound natural and professional for a video 
 `;
 
     try {
-      if (typeof GEMINI_API_KEY === 'undefined' || !GEMINI_API_KEY) {
-         throw new Error("Clé API Gemini non configurée.");
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("Utilisateur non authentifié.");
       }
-      
-      const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-      const responseStream = await ai.models.generateContentStream({
-        model: model,
-        contents: prompt,
-        config: {
-          tools: tools.length > 0 ? tools : undefined
-        }
+      const token = await user.getIdToken();
+
+      const response = await fetch('/api/generate-script', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sourceUrl,
+          sourceText,
+          intention,
+          tone,
+          stance,
+          duration
+        })
       });
 
-      let fullText = '';
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          fullText += chunk.text;
-          if (onProgress) {
-            onProgress(fullText);
-          }
-        }
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `Erreur serveur: ${response.status}`);
       }
 
-      return { script: fullText, type };
+      const data = await response.json();
+      
+      if (onProgress) {
+        // Since we are no longer streaming from backend for simplicity,
+        // we just call onProgress once with the full text.
+        onProgress(data.script);
+      }
+
+      return { script: data.script, type: data.type };
     } catch (error: any) {
       console.error('Error generating script:', error);
       let errMsg = "Erreur lors de la génération du contenu.";

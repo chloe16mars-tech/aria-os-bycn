@@ -1,5 +1,8 @@
 import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
-import { FirestoreService, AppNotification, UserProfile } from '../../services/firestore.service';
+import { NotificationService } from '../../services/notification.service';
+import { AppNotification } from '../../models/notification.model';
+import { UserService } from '../../services/user.service';
+import { UserProfile } from '../../models/user.model';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -78,7 +81,8 @@ import { Router } from '@angular/router';
   `
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
-  private firestoreService = inject(FirestoreService);
+  private notificationService = inject(NotificationService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
   notifications = signal<AppNotification[]>([]);
@@ -94,12 +98,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.unsubNotifications = this.firestoreService.getNotificationsSnapshot((data) => {
+    this.unsubNotifications = this.notificationService.getNotificationsSnapshot((data) => {
       this.notifications.set(data);
       this.checkLoading();
     });
 
-    this.unsubProfile = this.firestoreService.getUserProfileSnapshot((data) => {
+    this.unsubProfile = this.userService.getUserProfileSnapshot((data) => {
       this.userProfile.set(data);
       this.checkLoading();
     });
@@ -129,12 +133,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   async markAsRead(id: string) {
-    await this.firestoreService.markNotificationAsRead(id);
+    await this.notificationService.markNotificationAsRead(id);
   }
 
   async deleteNotification(id: string) {
     if (confirm('Voulez-vous vraiment supprimer cette notification ?')) {
-      await this.firestoreService.deleteNotification(id);
+      await this.notificationService.deleteNotification(id);
     }
   }
 }

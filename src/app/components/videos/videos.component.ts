@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { VideoService, SavedVideo } from '../../services/video.service';
+import { VideoService } from '../../services/video.service';
+import { SavedVideo } from '../../models/video.model';
 import { ToastService } from '../../services/toast.service';
 import { ScriptFormatPipe } from '../../pipes/script-format.pipe';
 
